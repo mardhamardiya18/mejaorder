@@ -91,12 +91,17 @@ class FoodResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('discount_price')
                     ->money('IDR')
+                    ->alignCenter()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('discount_percentage')
+                    ->suffix('%')
+                    ->alignCenter()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('is_promo')
+                    ->boolean()
+                    ->alignCenter()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('categories.name')
+                Tables\Columns\TextColumn::make('category.name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
