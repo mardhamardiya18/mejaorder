@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\TransactionDetailResource\Pages\ListTransactionDetails;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Models\Transaction;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -25,12 +27,15 @@ class TransactionResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('code')
                     ->required()
+                    ->label('Transaction Code')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('name')
                     ->required()
+                    ->label('Customer Name')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
                     ->tel()
+                    ->label('Customer Phone')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('external_id')
@@ -62,10 +67,15 @@ class TransactionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code')
+                    ->label('Transaction Code')
                     ->searchable(),
+                Tables\Columns\ImageColumn::make('barcode.images')
+                    ->label('Barcode Image'),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Customer Name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
+                    ->label('Customer Phone')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('external_id')
                     ->searchable(),
@@ -74,19 +84,27 @@ class TransactionResource extends Resource
                 Tables\Columns\TextColumn::make('payment_type')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Payment Status')
+                    ->badge()
+                    ->colors([
+                        'success' => fn($state): bool => in_array($state, ['SUCCESS', 'PAID', 'SETTLED']),
+                        'warning' => fn($state): bool => $state === 'PENDING',
+                        'danger'  => fn($state): bool => in_array($state, ['FAILED', 'EXPIRED']),
+                    ])
                     ->searchable(),
                 Tables\Columns\TextColumn::make('subtotal')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Subtotal')
+                    ->money('IDR')
+                    ->numeric(),
                 Tables\Columns\TextColumn::make('ppn')
-                    ->numeric()
-                    ->sortable(),
+                    ->money('IDR')
+                    ->numeric(),
                 Tables\Columns\TextColumn::make('total')
                     ->numeric()
+                    ->money('IDR')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('barcode_id')
-                    ->numeric()
-                    ->sortable(),
+
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -101,12 +119,13 @@ class TransactionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('see transaction')
+                    ->color('success')
+                    ->url(fn(Transaction $record): string => static::getUrl('transaction-detail.index', [
+                        'parent' => $record->id,
+                    ])),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array
@@ -122,6 +141,8 @@ class TransactionResource extends Resource
             'index' => Pages\ListTransactions::route('/'),
             'create' => Pages\CreateTransaction::route('/create'),
             'edit' => Pages\EditTransaction::route('/{record}/edit'),
+
+            'transaction-detail.index' => ListTransactionDetails::route('/{parent}/transaction-details'),
         ];
     }
 }

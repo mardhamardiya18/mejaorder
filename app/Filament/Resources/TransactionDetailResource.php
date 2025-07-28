@@ -10,7 +10,9 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TransactionDetailResource extends Resource
@@ -18,6 +20,18 @@ class TransactionDetailResource extends Resource
     protected static ?string $model = TransactionDetail::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // Disable navigation for this resource
+    }
+
+    public static string $parebntResource = TransactionResource::class;
+
+    public static function getRecordTitle(?Model $record): string|Htmlable|null
+    {
+        return $record->title;
+    }
 
     public static function form(Form $form): Form
     {
@@ -50,16 +64,19 @@ class TransactionDetailResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price')
-                    ->money()
+                    ->money('IDR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('subtotal')
                     ->numeric()
+                    ->money('IDR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('transaction_id')
                     ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('food_id')
-                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('food.name')
+                    ->label('Food Name')
+                    ->sortable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -73,14 +90,8 @@ class TransactionDetailResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array
@@ -94,8 +105,7 @@ class TransactionDetailResource extends Resource
     {
         return [
             'index' => Pages\ListTransactionDetails::route('/'),
-            'create' => Pages\CreateTransactionDetail::route('/create'),
-            'edit' => Pages\EditTransactionDetail::route('/{record}/edit'),
+
         ];
     }
 }
