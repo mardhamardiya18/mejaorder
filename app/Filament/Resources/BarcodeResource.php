@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Storage;
 
 class BarcodeResource extends Resource
 {
@@ -25,16 +26,15 @@ class BarcodeResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('table_number')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('images')
+                    ->default(fn() => strtoupper(chr(rand(65, 90)) . rand(1000, 9999))),
+                Forms\Components\FileUpload::make('images')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('qr_value')
+                    ->image()
+                    ->columnSpanFull(),
+
+                Forms\Components\Select::make('user_id')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('user_id')
-                    ->required()
-                    ->numeric(),
+                    ->relationship('users', 'name'),
             ]);
     }
 
@@ -48,8 +48,7 @@ class BarcodeResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('qr_value')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('user_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('user.name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -64,7 +63,18 @@ class BarcodeResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('download')
+                    ->label('Download QR Code')
+                    ->icon('heroicon-o-arrow-down-circle')
+                    ->action(function ($record) {
+                        $filePath = 'qr_codes/' . $record->images;
+
+                        if (Storage::disk('public')->exists($filePath)) {
+                            return Storage::disk('public')->download($filePath);
+                        }
+
+                        session()->flash('error', 'File not found.');
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -84,7 +94,7 @@ class BarcodeResource extends Resource
     {
         return [
             'index' => Pages\ListBarcodes::route('/'),
-            'create' => Pages\CreateBarcode::route('/create'),
+            'create' => Pages\CreateQr::route('/create'),
             'edit' => Pages\EditBarcode::route('/{record}/edit'),
         ];
     }
