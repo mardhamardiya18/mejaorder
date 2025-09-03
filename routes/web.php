@@ -1,14 +1,31 @@
 <?php
 
-use Faker\Provider\ar_EG\Payment;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\QRController;
+use App\Http\Middleware\CheckTableNumber;
+use App\Livewire\Pages\AllFoodPage;
+use App\Livewire\Pages\CartPage;
+use App\Livewire\Pages\CheckoutPage;
+use App\Livewire\Pages\DetailPage;
+use App\Livewire\Pages\FavoritePage;
+use App\Livewire\Pages\PromoPage;
+use App\Livewire\Pages\HomePage;
+use App\Livewire\Pages\PaymentFailurePage;
+use App\Livewire\Pages\PaymentSuccessPage;
+use App\Livewire\Pages\ScanPage;
+
+use Livewire\Livewire;
+
 use Illuminate\Support\Facades\Route;
+
+
 
 Route::middleware(CheckTableNumber::class)->group(function () {
     Route::get('/', HomePage::class)->name('home');
     Route::get('/food', AllFoodPage::class)->name('product.index');
     Route::get('/food/favorite', FavoritePage::class)->name('product.favorite');
     Route::get('/food/promo', PromoPage::class)->name('product.promo');
-    Route::get('/food/{id}', FoodDetailPage::class)->name('product.detail');
+    Route::get('/food/{id}', DetailPage::class)->name('product.detail');
 });
 
 Route::middleware(CheckTableNumber::class)->controller(TransactionController::class)->group(function () {
