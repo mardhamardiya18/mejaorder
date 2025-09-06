@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pages;
 
+use App\Livewire\Traits\CategoryFilterTrait;
 use App\Models\Category;
 use App\Models\Food;
 use Livewire\Attributes\Layout;

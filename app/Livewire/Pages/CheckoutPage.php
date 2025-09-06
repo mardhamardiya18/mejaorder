@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Pages;
 
+use App\Livewire\Traits\CartManagement;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Session;
 use Livewire\Component;
 use Illuminate\Support\Str;
-
+use Livewire\Attributes\Layout;
 
 class CheckoutPage extends Component
 {
