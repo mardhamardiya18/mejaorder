@@ -2,12 +2,60 @@
 
 namespace App\Livewire\Pages;
 
+use App\Models\Category;
+use App\Models\Food;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class HomePage extends Component
 {
-    public function render()
+    public $promos;
+    public $favorites;
+    public $categories;
+
+    public $tableNumber;
+    public $name;
+    public $phone;
+
+    public $term = '';
+
+    public bool $isCustomerDataComplete = true;
+
+    public function mount(Food $food)
     {
-        return view('livewire.pages.home-page');
+        $this->categories = Category::all();
+        $this->promos = $food->getPromo();
+        $this->favorites = $food->getFavoriteFood();
+        $this->tableNumber = session('table_number');
+
+        $name = session('name');
+        $phone = session('phone');
+
+        if ($name && $phone) {
+            $this->isCustomerDataComplete = false;
+        }
+    }
+
+    public function saveUserInfo()
+    {
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:15',
+        ]);
+
+        session(['name' => $this->name, 'phone' => $this->phone]);
+        $this->name = session('name');
+    }
+
+    #[Layout('components.layouts.page')]
+
+    public function render(Food $food)
+    {
+        sleep(1);
+        $searchResult = $food->search(trim($this->term))->get();
+
+        return view('livewire.pages.home-page', [
+            'searchResult' => $searchResult,
+        ]);
     }
 }
