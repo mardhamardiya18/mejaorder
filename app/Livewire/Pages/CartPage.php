@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Pages;
 
-
+use App\Livewire\Traits\CartManagement;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Session;
 use Livewire\Component;
